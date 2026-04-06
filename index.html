@@ -40,48 +40,49 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  padding: 24px 30px 20px;
+  padding: 10px 15px 8px;
   z-index: 50;
   text-align: center;
-  background: linear-gradient(to bottom, var(--blue) 70%, transparent);
+  background: linear-gradient(to bottom, var(--blue) 80%, transparent);
 }
 .header-content {}
 .header-upper {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 4px;
   color: var(--red);
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .header-title {
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(22px, 3.5vw, 34px);
   font-weight: 800;
   line-height: 1.1;
   color: var(--white);
 }
 .header-desc {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 300;
-  color: rgba(255,255,255,0.45);
-  margin-top: 8px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 4px;
   letter-spacing: 0.3px;
 }
 
-/* STEP INDICATOR - vertical right side */
+/* STEP INDICATOR - bottom center */
 .step-indicator {
   position: fixed;
-  right: 30px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 6px;
   z-index: 50;
+  align-items: center;
 }
 .step-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: rgba(255,255,255,0.15);
   transition: all 0.4s ease;
@@ -90,27 +91,11 @@ html, body {
 }
 .step-dot.active {
   background: var(--red);
-  height: 28px;
+  width: 24px;
+  height: 7px;
   border-radius: 4px;
 }
-.step-dot::after {
-  content: attr(data-label);
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 10px;
-  font-family: 'Space Mono', monospace;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0);
-  white-space: nowrap;
-  transition: all 0.3s ease;
-  pointer-events: none;
-}
-.step-dot:hover::after,
-.step-dot.active::after {
-  color: rgba(255,255,255,0.4);
-}
+/* No label tooltip in horizontal mode */
 
 /* SCENE CONTAINER */
 .scene-container {
@@ -145,9 +130,9 @@ html, body {
 .scene-inner {
   display: flex;
   align-items: center;
-  gap: 80px;
-  max-width: 900px;
-  padding: 0 60px;
+  gap: 50px;
+  max-width: 850px;
+  padding: 0 20px;
   z-index: 2;
 }
 
@@ -164,8 +149,8 @@ html, body {
 }
 
 .scene-icon {
-  width: 220px;
-  height: 220px;
+  width: 180px;
+  height: 180px;
 }
 
 /* TEXT SIDE */
@@ -183,33 +168,33 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.08);
   font-family: 'Space Mono', monospace;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--white);
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .scene-title {
-  font-size: clamp(26px, 4vw, 40px);
+  font-size: clamp(22px, 3.5vw, 34px);
   font-weight: 800;
   line-height: 1.15;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 .scene-title .accent { color: var(--red); }
 .scene-title .beige { color: var(--beige); }
 
 .scene-desc {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 300;
   color: rgba(255,255,255,0.5);
-  max-width: 380px;
-  line-height: 1.7;
+  max-width: 360px;
+  line-height: 1.6;
 }
 
 /* VERTICAL LINE accent on text side */
@@ -217,10 +202,10 @@ html, body {
   content: '';
   display: block;
   width: 3px;
-  height: 30px;
+  height: 22px;
   background: var(--red);
   border-radius: 2px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   opacity: 0;
   transition: opacity 0.4s ease 0.7s;
 }
@@ -237,14 +222,14 @@ html, body {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   color: var(--white);
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   transition: all 0.3s ease;
   backdrop-filter: blur(8px);
 }
@@ -252,15 +237,15 @@ html, body {
   background: var(--red);
   border-color: var(--red);
 }
-.nav-btn.prev { left: 20px; }
-.nav-btn.next { right: 60px; }
+.nav-btn.prev { left: 8px; }
+.nav-btn.next { right: 8px; }
 .nav-btn:disabled { opacity: 0.15; pointer-events: none; }
 
 /* AUTO-PLAY */
 .auto-toggle {
   position: fixed;
-  bottom: 25px;
-  right: 30px;
+  bottom: 8px;
+  left: 15px;
   z-index: 50;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.1);
@@ -279,24 +264,57 @@ html, body {
   border-color: var(--red);
   color: var(--white);
 }
+.auto-toggle.hovering {
+  background: rgba(232,66,73,0.15);
+  border-color: rgba(232,66,73,0.4);
+  color: var(--red);
+  animation: pauseBlink 1.5s ease-in-out infinite;
+}
+@keyframes pauseBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 
-/* BOTTOM STEP COUNTER */
-.step-counter {
+/* NEXT STEP TEASER */
+.next-teaser {
   position: fixed;
-  bottom: 28px;
-  left: 30px;
+  bottom: 8px;
+  right: 15px;
   z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.4;
+}
+.next-teaser:hover {
+  opacity: 1;
+}
+.next-label {
   font-family: 'Space Mono', monospace;
-  font-size: 12px;
-  color: rgba(255,255,255,0.25);
+  font-size: 9px;
   letter-spacing: 2px;
+  color: rgba(255,255,255,0.5);
 }
-.step-counter .current-num {
-  color: var(--white);
-  font-size: 24px;
-  font-weight: 700;
+.next-arrow {
+  font-size: 13px;
+  color: var(--red);
+  transition: transform 0.3s ease;
+}
+.next-teaser:hover .next-arrow {
+  transform: translateX(3px);
+}
+.next-name {
   font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--beige);
+  transition: all 0.4s ease;
 }
+.next-teaser.restart .next-label { display: none; }
+.next-teaser.restart .next-arrow { color: var(--beige); }
+.next-teaser.restart .next-name { color: rgba(255,255,255,0.4); }
 
 /* FLOATING PARTICLES */
 .particle {
@@ -407,10 +425,9 @@ html, body {
     padding: 80px 30px 100px;
   }
   .scene-icon { width: 150px; height: 150px; }
-  .step-indicator { display: none; }
   .header-desc { display: none; }
   .text-side::before { margin: 0 auto 16px; }
-  .nav-btn.next { right: 20px; }
+  .nav-btn.next { right: 8px; }
 }
 </style>
 </head>
@@ -431,8 +448,10 @@ html, body {
 
 <div class="step-indicator" id="stepIndicator"></div>
 
-<div class="step-counter">
-  <span class="current-num" id="currentNum">1</span> / 5
+<div class="next-teaser" id="nextTeaser" onclick="goTo(current+1)">
+  <span class="next-label">SUIVANT</span>
+  <span class="next-arrow">→</span>
+  <span class="next-name" id="nextName"></span>
 </div>
 
 <button class="auto-toggle" id="autoToggle" onclick="toggleAuto()">▶ AUTO</button>
@@ -745,17 +764,25 @@ const scenes = document.querySelectorAll('.scene');
 const container = document.getElementById('sceneContainer');
 const indicator = document.getElementById('stepIndicator');
 const progressBar = document.getElementById('progressBar');
-const currentNum = document.getElementById('currentNum');
+const nextTeaser = document.getElementById('nextTeaser');
+const nextName = document.getElementById('nextName');
 let current = 0;
 let autoPlay = false;
 let autoInterval;
 const total = scenes.length;
 
-// Build vertical dots
+const stepTitles = [
+  'Qualification du projet',
+  'Recherche & vérifications',
+  'Validation & encadrement financier',
+  'Logistique & coordination',
+  'Réception & finalisation'
+];
+
+// Build dots
 scenes.forEach((s, i) => {
   const dot = document.createElement('div');
   dot.className = 'step-dot';
-  dot.setAttribute('data-label', s.getAttribute('data-label') || '');
   dot.onclick = () => goTo(i);
   indicator.appendChild(dot);
 });
@@ -774,28 +801,81 @@ function goTo(index) {
   });
   
   progressBar.style.width = `${((current + 1) / total) * 100}%`;
-  currentNum.textContent = current + 1;
+  
+  // Update next teaser
+  if (current < total - 1) {
+    nextTeaser.classList.remove('restart');
+    nextName.textContent = stepTitles[current + 1];
+  } else {
+    nextTeaser.classList.add('restart');
+    nextName.textContent = 'Revoir depuis le début';
+  }
   
   document.getElementById('prevBtn').disabled = current === 0;
-  document.getElementById('nextBtn').disabled = current === total - 1;
+  document.getElementById('nextBtn').disabled = false;
 }
+
+// Override next button for loop
+document.getElementById('nextBtn').onclick = () => {
+  if (current >= total - 1) goTo(0);
+  else goTo(current + 1);
+};
+nextTeaser.onclick = () => {
+  if (current >= total - 1) goTo(0);
+  else goTo(current + 1);
+};
 
 function toggleAuto() {
   autoPlay = !autoPlay;
-  const btn = document.getElementById('autoToggle');
+  updateAutoBtn();
   if (autoPlay) {
-    btn.textContent = '⏸ PAUSE';
-    btn.classList.add('playing');
-    autoInterval = setInterval(() => {
-      if (current >= total - 1) current = -1;
-      goTo(current + 1);
-    }, 5000);
+    startAutoInterval();
   } else {
-    btn.textContent = '▶ AUTO';
-    btn.classList.remove('playing');
     clearInterval(autoInterval);
   }
 }
+
+function startAutoInterval() {
+  clearInterval(autoInterval);
+  autoInterval = setInterval(() => {
+    if (current >= total - 1) current = -1;
+    goTo(current + 1);
+  }, 5000);
+}
+
+function updateAutoBtn() {
+  const btn = document.getElementById('autoToggle');
+  if (!autoPlay) {
+    btn.innerHTML = '▶ <span>AUTO</span>';
+    btn.classList.remove('playing', 'hovering');
+  } else if (hoverPaused) {
+    btn.innerHTML = '⏸ <span>EN PAUSE</span>';
+    btn.classList.remove('playing');
+    btn.classList.add('hovering');
+  } else {
+    btn.innerHTML = '⏸ <span>PAUSE</span>';
+    btn.classList.add('playing');
+    btn.classList.remove('hovering');
+  }
+}
+
+// Hover pause
+let hoverPaused = false;
+const sceneContainer = document.getElementById('sceneContainer');
+
+sceneContainer.addEventListener('mouseenter', () => {
+  if (!autoPlay) return;
+  hoverPaused = true;
+  clearInterval(autoInterval);
+  updateAutoBtn();
+});
+
+sceneContainer.addEventListener('mouseleave', () => {
+  if (!autoPlay) return;
+  hoverPaused = false;
+  startAutoInterval();
+  updateAutoBtn();
+});
 
 // Keyboard
 document.addEventListener('keydown', (e) => {
@@ -814,18 +894,9 @@ document.addEventListener('touchend', (e) => {
   }
 });
 
-// Wheel
-let wheelCooldown = false;
-document.addEventListener('wheel', (e) => {
-  if (wheelCooldown) return;
-  wheelCooldown = true;
-  setTimeout(() => wheelCooldown = false, 800);
-  if (e.deltaY > 15) goTo(current + 1);
-  else if (e.deltaY < -15) goTo(current - 1);
-}, { passive: true });
-
 // Init
 goTo(0);
+toggleAuto(); // Auto-play par défaut
 </script>
 </body>
 </html>
