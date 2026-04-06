@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOODCAR.RE - Parcours d'importation</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --blue: #273442;
+  --red: #e84249;
+  --beige: #ecddb9;
+  --white: #ffffff;
+  --light-bg: #f0ede6;
+}
+
+html, body {
+  overflow: hidden;
+  height: 100%;
+  background: var(--blue);
+  font-family: 'Outfit', sans-serif;
+  color: var(--white);
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: var(--red);
+  z-index: 100;
+  transition: width 0.3s ease;
+}
+
+/* HEADER */
+.header {
+  position: fixed;
+  top: 20px;
+  left: 30px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header .logo-text {
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+.header .logo-text span { color: var(--red); }
+.header .sub { font-size: 10px; letter-spacing: 4px; color: var(--beige); opacity: 0.7; }
+
+/* STEP INDICATOR */
+.step-indicator {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 50;
+}
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+.step-dot.active {
+  background: var(--red);
+  width: 30px;
+  border-radius: 5px;
+}
+
+/* SCENE CONTAINER */
+.scene-container {
+  display: flex;
+  height: 100vh;
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* EACH SCENE */
+.scene {
+  min-width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* SCENE BACKGROUNDS */
+.scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: 
+    radial-gradient(circle at 20% 50%, var(--beige) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--red) 0%, transparent 40%);
+}
+
+/* SCENE CONTENT */
+.scene-content {
+  text-align: center;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.7s ease 0.3s;
+}
+.scene.active .scene-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scene-number {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--red);
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+
+.scene-title {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.scene-title .accent { color: var(--red); }
+.scene-title .beige { color: var(--beige); }
+
+.scene-desc {
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.6);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ICON AREA */
+.icon-area {
+  margin-bottom: 40px;
+  position: relative;
+}
+
+/* SVG ILLUSTRATIONS */
+.scene-icon {
+  width: 180px;
+  height: 180px;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s;
+}
+.scene.active .scene-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* SCENE 1 - CLIENT CONTACT */
+.phone-ring {
+  animation: phoneRing 1.5s ease-in-out infinite;
+}
+@keyframes phoneRing {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(12deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(8deg); }
+  40% { transform: rotate(-8deg); }
+  50% { transform: rotate(0deg); }
+}
+
+/* SCENE 3 - BOAT */
+.boat-float {
+  animation: boatFloat 3s ease-in-out infinite;
+}
+@keyframes boatFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(1deg); }
+  75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+/* SCENE 4 - WAVES */
+.wave-line {
+  animation: waveMove 2s ease-in-out infinite;
+}
+.wave-line:nth-child(2) { animation-delay: 0.3s; }
+.wave-line:nth-child(3) { animation-delay: 0.6s; }
+@keyframes waveMove {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(15px); }
+}
+
+/* SCENE 5 - CRANE */
+.crane-hook {
+  animation: craneMove 2.5s ease-in-out infinite;
+  transform-origin: top center;
+}
+@keyframes craneMove {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+/* SCENE 6 - PAPERS */
+.paper-flip {
+  animation: paperFlip 2s ease-in-out infinite;
+}
+@keyframes paperFlip {
+  0%, 100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(15deg); }
+}
+
+/* SCENE 7 - KEY */
+.key-shine {
+  animation: keyShine 2s ease-in-out infinite;
+}
+@keyframes keyShine {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* SCENE 8 - CAR DRIVE */
+.car-drive {
+  animation: carDrive 2s ease-in-out infinite;
+}
+@keyframes carDrive {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+}
+
+/* PARTICLES */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--beige);
+  border-radius: 50%;
+  opacity: 0;
+}
+.scene.active .particle {
+  animation: particleFade 3s ease-in-out infinite;
+}
+@keyframes particleFade {
+  0%, 100% { opacity: 0; transform: translateY(0); }
+  50% { opacity: 0.3; transform: translateY(-20px); }
+}
+
+/* SCROLL HINT */
+.scroll-hint {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.5;
+  animation: hintPulse 2s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.scroll-hint span {
+  font-size: 11px;
+  letter-spacing: 3px;
+  font-family: 'Space Mono', monospace;
+}
+.scroll-hint .arrow {
+  width: 20px;
+  height: 20px;
+  border-right: 2px solid var(--beige);
+  border-bottom: 2px solid var(--beige);
+  transform: rotate(-45deg);
+}
+
+/* CONTROLS */
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.nav-btn:hover {
+  background: var(--red);
+  border-color: var(--red);
+}
+.nav-btn.prev { left: 20px; }
+.nav-btn.next { right: 20px; }
+.nav-btn:disabled { opacity: 0.2; pointer-events: none; }
+
+/* AUTO-PLAY TOGGLE */
+.auto-toggle {
+  position: fixed;
+  top: 20px;
+  right: 30px;
+  z-index: 50;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--beige);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.auto-toggle:hover, .auto-toggle.playing {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="header">
+  <div>
+    <div class="logo-text">GOODCAR<span>.RE</span></div>
+    <div class="sub">AGENCE AUTOMOBILE</div>
+  </div>
+</div>
+
+<button class="auto-toggle" id="autoToggle" onclick="toggleAuto()">▶ AUTO</button>
+
+<button class="nav-btn prev" id="prevBtn" onclick="goTo(current-1)">‹</button>
+<button class="nav-btn next" id="nextBtn" onclick="goTo(current+1)">›</button>
+
+<div class="step-indicator" id="stepIndicator"></div>
+
+<div class="scene-container" id="sceneContainer">
+
+  <!-- SCENE 1: Contact -->
+  <div class="scene" data-index="0">
+    <div class="particle" style="top:20%;left:15%;animation-delay:0s;"></div>
+    <div class="particle" style="top:70%;left:80%;animation-delay:1s;"></div>
+    <div class="particle" style="top:40%;left:60%;animation-delay:2s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <g class="phone-ring">
+            <rect x="55" y="35" width="70" height="110" rx="12" fill="none" stroke="#ecddb9" stroke-width="2.5"/>
+            <rect x="65" y="50" width="50" height="70" rx="4" fill="rgba(236,221,185,0.1)"/>
+            <circle cx="90" cy="135" r="5" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="90" cy="43" r="2" fill="#e84249"/>
+          </g>
+          <!-- Ring waves -->
+          <path d="M40 55 Q30 70 40 85" fill="none" stroke="#e84249" stroke-width="1.5" opacity="0.5">
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+          </path>
+          <path d="M30 50 Q18 70 30 90" fill="none" stroke="#e84249" stroke-width="1.5" opacity="0.3">
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" begin="0.2s" repeatCount="indefinite"/>
+          </path>
+          <path d="M140 55 Q150 70 140 85" fill="none" stroke="#e84249" stroke-width="1.5" opacity="0.5">
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+          </path>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 01</div>
+      <div class="scene-title">Votre <span class="accent">demande</span></div>
+      <div class="scene-desc">Le client nous contacte avec son projet. On écoute, on conseille, on trouve le véhicule idéal.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 2: Sourcing Europe -->
+  <div class="scene" data-index="1">
+    <div class="particle" style="top:30%;left:25%;animation-delay:0.5s;"></div>
+    <div class="particle" style="top:60%;left:70%;animation-delay:1.5s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <!-- EU Map simplified -->
+          <path d="M60 40 L80 35 L100 38 L115 45 L120 60 L125 80 L118 100 L105 110 L90 115 L75 112 L60 100 L55 80 L58 55 Z" fill="none" stroke="rgba(236,221,185,0.3)" stroke-width="1.5"/>
+          <!-- France -->
+          <path d="M70 65 L80 60 L90 65 L88 80 L78 85 L68 78 Z" fill="rgba(232,66,73,0.2)" stroke="#e84249" stroke-width="1.5"/>
+          <!-- Germany -->
+          <path d="M92 50 L102 48 L108 58 L105 70 L95 68 L90 58 Z" fill="rgba(236,221,185,0.15)" stroke="#ecddb9" stroke-width="1.5"/>
+          <!-- Pin France -->
+          <circle cx="80" cy="72" r="4" fill="#e84249">
+            <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Pin Germany -->
+          <circle cx="100" cy="58" r="4" fill="#ecddb9">
+            <animate attributeName="r" values="4;6;4" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Car icon -->
+          <g transform="translate(55, 125)">
+            <rect x="0" y="5" width="40" height="15" rx="4" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <path d="M5 5 L10 -5 L30 -5 L35 5" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="10" cy="22" r="4" fill="none" stroke="#e84249" stroke-width="1.5"/>
+            <circle cx="30" cy="22" r="4" fill="none" stroke="#e84249" stroke-width="1.5"/>
+          </g>
+          <!-- Search icon -->
+          <circle cx="140" cy="135" r="15" fill="none" stroke="rgba(236,221,185,0.4)" stroke-width="1.5"/>
+          <line x1="151" y1="146" x2="160" y2="155" stroke="rgba(236,221,185,0.4)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 02</div>
+      <div class="scene-title">Sourcing <span class="beige">Europe</span></div>
+      <div class="scene-desc">On sélectionne votre véhicule auprès des meilleures concessions en France et en Allemagne.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 3: Chargement bateau -->
+  <div class="scene" data-index="2">
+    <div class="particle" style="top:25%;left:20%;animation-delay:0.2s;"></div>
+    <div class="particle" style="top:65%;left:75%;animation-delay:1.2s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <g class="boat-float">
+            <!-- Ship hull -->
+            <path d="M25 100 L35 130 L145 130 L155 100 Z" fill="rgba(236,221,185,0.1)" stroke="#ecddb9" stroke-width="2"/>
+            <!-- Ship deck -->
+            <rect x="45" y="75" width="90" height="25" rx="2" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <!-- Containers -->
+            <rect x="50" y="80" width="25" height="16" rx="1" fill="rgba(232,66,73,0.3)" stroke="#e84249" stroke-width="1"/>
+            <rect x="78" y="80" width="25" height="16" rx="1" fill="rgba(236,221,185,0.2)" stroke="#ecddb9" stroke-width="1"/>
+            <rect x="106" y="80" width="25" height="16" rx="1" fill="rgba(232,66,73,0.2)" stroke="#e84249" stroke-width="1"/>
+            <!-- Chimney -->
+            <rect x="120" y="55" width="15" height="20" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <!-- Smoke -->
+            <circle cx="127" cy="45" r="4" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1">
+              <animate attributeName="cy" values="45;30;20" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.5;0.2;0" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="132" cy="50" r="3" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1">
+              <animate attributeName="cy" values="50;35;25" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.4;0.15;0" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <!-- Water -->
+          <path d="M10 140 Q30 135 50 140 Q70 145 90 140 Q110 135 130 140 Q150 145 170 140" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="1.5">
+            <animate attributeName="d" values="M10 140 Q30 135 50 140 Q70 145 90 140 Q110 135 130 140 Q150 145 170 140;M10 142 Q30 147 50 142 Q70 137 90 142 Q110 147 130 142 Q150 137 170 142;M10 140 Q30 135 50 140 Q70 145 90 140 Q110 135 130 140 Q150 145 170 140" dur="3s" repeatCount="indefinite"/>
+          </path>
+          <path d="M10 150 Q30 145 50 150 Q70 155 90 150 Q110 145 130 150 Q150 155 170 150" fill="none" stroke="rgba(236,221,185,0.1)" stroke-width="1">
+            <animate attributeName="d" values="M10 150 Q30 145 50 150 Q70 155 90 150 Q110 145 130 150 Q150 155 170 150;M10 152 Q30 157 50 152 Q70 147 90 152 Q110 157 130 152 Q150 147 170 152;M10 150 Q30 145 50 150 Q70 155 90 150 Q110 145 130 150 Q150 155 170 150" dur="3.5s" repeatCount="indefinite"/>
+          </path>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 03</div>
+      <div class="scene-title">Embarquement <span class="accent">maritime</span></div>
+      <div class="scene-desc">Le véhicule est chargé sur un cargo direction l'océan Indien.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 4: Traversée -->
+  <div class="scene" data-index="3">
+    <div class="particle" style="top:35%;left:30%;animation-delay:0.8s;"></div>
+    <div class="particle" style="top:55%;left:65%;animation-delay:1.8s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <!-- Globe circle -->
+          <circle cx="90" cy="90" r="65" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="1.5"/>
+          <ellipse cx="90" cy="90" rx="35" ry="65" fill="none" stroke="rgba(236,221,185,0.1)" stroke-width="1"/>
+          <line x1="25" y1="90" x2="155" y2="90" stroke="rgba(236,221,185,0.1)" stroke-width="1"/>
+          <!-- Route dotted -->
+          <path d="M55 65 Q70 85 85 90 Q100 95 120 100 Q135 105 140 115" fill="none" stroke="#e84249" stroke-width="2" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" values="0;-16" dur="1.5s" repeatCount="indefinite"/>
+          </path>
+          <!-- Start point (Europe) -->
+          <circle cx="55" cy="65" r="5" fill="#ecddb9"/>
+          <text x="40" y="58" fill="#ecddb9" font-size="9" font-family="Space Mono">EU</text>
+          <!-- End point (Réunion) -->
+          <circle cx="140" cy="115" r="5" fill="#e84249">
+            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <text x="125" y="135" fill="#e84249" font-size="9" font-family="Space Mono">974</text>
+          <!-- Small ship on route -->
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="0,0;30,15;60,25" dur="4s" repeatCount="indefinite"/>
+            <polygon points="80,85 90,82 95,85 90,88" fill="#ecddb9" opacity="0.8"/>
+          </g>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 04</div>
+      <div class="scene-title">La <span class="beige">traversée</span></div>
+      <div class="scene-desc">Plus de 9 000 km sur l'océan. On suit votre véhicule jusqu'à destination.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 5: Arrivée port -->
+  <div class="scene" data-index="4">
+    <div class="particle" style="top:20%;left:40%;animation-delay:0.3s;"></div>
+    <div class="particle" style="top:70%;left:55%;animation-delay:1.3s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <!-- Crane -->
+          <line x1="90" y1="20" x2="90" y2="110" stroke="#ecddb9" stroke-width="2"/>
+          <line x1="90" y1="20" x2="140" y2="20" stroke="#ecddb9" stroke-width="2"/>
+          <line x1="90" y1="20" x2="90" y2="20" stroke="#ecddb9" stroke-width="2"/>
+          <line x1="90" y1="30" x2="130" y2="20" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+          <!-- Hook and cable -->
+          <g class="crane-hook">
+            <line x1="130" y1="20" x2="130" y2="55" stroke="#e84249" stroke-width="1.5"/>
+            <path d="M125 55 Q130 62 135 55" fill="none" stroke="#e84249" stroke-width="2"/>
+            <!-- Car being lifted -->
+            <g transform="translate(112, 65)">
+              <rect x="0" y="5" width="36" height="14" rx="3" fill="rgba(232,66,73,0.2)" stroke="#e84249" stroke-width="1.5"/>
+              <path d="M4 5 L9 -4 L27 -4 L32 5" fill="none" stroke="#e84249" stroke-width="1.5"/>
+              <circle cx="9" cy="21" r="3" fill="none" stroke="#ecddb9" stroke-width="1"/>
+              <circle cx="27" cy="21" r="3" fill="none" stroke="#ecddb9" stroke-width="1"/>
+            </g>
+          </g>
+          <!-- Ground / Port -->
+          <line x1="20" y1="110" x2="160" y2="110" stroke="rgba(236,221,185,0.3)" stroke-width="1.5"/>
+          <!-- Port building -->
+          <rect x="25" y="85" width="40" height="25" rx="2" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="1"/>
+          <text x="32" y="102" fill="rgba(236,221,185,0.3)" font-size="8" font-family="Space Mono">PORT</text>
+          <!-- Water line -->
+          <path d="M10 130 Q40 125 70 130 Q100 135 130 130 Q160 125 170 130" fill="none" stroke="rgba(236,221,185,0.15)" stroke-width="1">
+            <animate attributeName="d" values="M10 130 Q40 125 70 130 Q100 135 130 130 Q160 125 170 130;M10 132 Q40 137 70 132 Q100 127 130 132 Q160 137 170 132;M10 130 Q40 125 70 130 Q100 135 130 130 Q160 125 170 130" dur="3s" repeatCount="indefinite"/>
+          </path>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 05</div>
+      <div class="scene-title">Arrivée au <span class="accent">port</span></div>
+      <div class="scene-desc">Le véhicule débarque à La Réunion. On s'occupe du déchargement.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 6: Papiers -->
+  <div class="scene" data-index="5">
+    <div class="particle" style="top:25%;left:35%;animation-delay:0.6s;"></div>
+    <div class="particle" style="top:65%;left:60%;animation-delay:1.6s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <!-- Main document -->
+          <g class="paper-flip" style="transform-origin: 90px 80px;">
+            <rect x="55" y="30" width="70" height="95" rx="4" fill="rgba(236,221,185,0.08)" stroke="#ecddb9" stroke-width="1.5"/>
+            <line x1="68" y1="50" x2="112" y2="50" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+            <line x1="68" y1="62" x2="112" y2="62" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+            <line x1="68" y1="74" x2="100" y2="74" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+            <line x1="68" y1="86" x2="108" y2="86" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+            <line x1="68" y1="98" x2="95" y2="98" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+          </g>
+          <!-- Stamp -->
+          <circle cx="105" cy="105" r="15" fill="none" stroke="#e84249" stroke-width="2" opacity="0.6"/>
+          <text x="96" y="109" fill="#e84249" font-size="8" font-weight="bold" font-family="Space Mono">OK</text>
+          <!-- Checkmark -->
+          <g transform="translate(60, 130)">
+            <circle cx="15" cy="15" r="14" fill="rgba(236,221,185,0.1)" stroke="#ecddb9" stroke-width="1.5"/>
+            <path d="M8 15 L13 20 L22 10" fill="none" stroke="#ecddb9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <animate attributeName="stroke-dasharray" values="0 30;30 0" dur="1s" begin="0.5s" fill="freeze"/>
+            </path>
+          </g>
+          <text x="85" y="148" fill="rgba(236,221,185,0.4)" font-size="8" font-family="Space Mono">CARTE GRISE</text>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 06</div>
+      <div class="scene-title">Les <span class="beige">formalités</span></div>
+      <div class="scene-desc">Dédouanement, carte grise, immatriculation. On gère toute l'administration pour vous.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 7: Livraison -->
+  <div class="scene" data-index="6">
+    <div class="particle" style="top:30%;left:45%;animation-delay:0.4s;"></div>
+    <div class="particle" style="top:60%;left:50%;animation-delay:1.4s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <!-- Building (agence) -->
+          <rect x="40" y="50" width="100" height="80" rx="4" fill="rgba(236,221,185,0.05)" stroke="#ecddb9" stroke-width="1.5"/>
+          <rect x="55" y="65" width="20" height="25" rx="2" fill="none" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+          <rect x="105" y="65" width="20" height="25" rx="2" fill="none" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+          <!-- Door -->
+          <rect x="78" y="95" width="24" height="35" rx="2" fill="rgba(232,66,73,0.15)" stroke="#e84249" stroke-width="1.5"/>
+          <!-- GOODCAR sign -->
+          <text x="56" y="46" fill="#ecddb9" font-size="10" font-weight="bold" font-family="Outfit" letter-spacing="2">GOODCAR</text>
+          <!-- Key handover -->
+          <g class="key-shine" transform="translate(90, 140)">
+            <circle cx="0" cy="0" r="6" fill="none" stroke="#e84249" stroke-width="1.5"/>
+            <line x1="6" y1="0" x2="20" y2="0" stroke="#e84249" stroke-width="2"/>
+            <line x1="16" y1="0" x2="16" y2="5" stroke="#e84249" stroke-width="1.5"/>
+            <line x1="20" y1="0" x2="20" y2="5" stroke="#e84249" stroke-width="1.5"/>
+          </g>
+          <!-- Sparkles -->
+          <g>
+            <line x1="125" y1="140" x2="130" y2="135" stroke="#ecddb9" stroke-width="1" opacity="0.5">
+              <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" repeatCount="indefinite"/>
+            </line>
+            <line x1="135" y1="145" x2="140" y2="140" stroke="#ecddb9" stroke-width="1" opacity="0.5">
+              <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+            </line>
+          </g>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 07</div>
+      <div class="scene-title">Remise des <span class="accent">clés</span></div>
+      <div class="scene-desc">Rendez-vous à l'agence. Votre véhicule est prêt, les clés vous attendent.</div>
+    </div>
+  </div>
+
+  <!-- SCENE 8: Client heureux -->
+  <div class="scene" data-index="7">
+    <div class="particle" style="top:20%;left:20%;animation-delay:0s;"></div>
+    <div class="particle" style="top:40%;left:75%;animation-delay:0.8s;"></div>
+    <div class="particle" style="top:70%;left:30%;animation-delay:1.6s;"></div>
+    <div class="scene-content">
+      <div class="icon-area">
+        <svg class="scene-icon" viewBox="0 0 180 180">
+          <!-- Road -->
+          <path d="M0 130 Q60 120 90 125 Q120 130 180 120" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="2"/>
+          <line x1="80" y1="126" x2="85" y2="125" stroke="rgba(236,221,185,0.15)" stroke-width="1" stroke-dasharray="3 6"/>
+          <!-- Car moving -->
+          <g class="car-drive">
+            <rect x="65" y="100" width="50" height="20" rx="5" fill="rgba(232,66,73,0.15)" stroke="#e84249" stroke-width="2"/>
+            <path d="M72 100 L80 85 L100 85 L108 100" fill="rgba(232,66,73,0.1)" stroke="#e84249" stroke-width="1.5"/>
+            <!-- Windows -->
+            <path d="M78 100 L83 90 L90 90 L90 100" fill="rgba(236,221,185,0.1)" stroke="rgba(236,221,185,0.3)" stroke-width="0.5"/>
+            <path d="M92 100 L92 90 L100 90 L104 100" fill="rgba(236,221,185,0.1)" stroke="rgba(236,221,185,0.3)" stroke-width="0.5"/>
+            <!-- Wheels -->
+            <circle cx="78" cy="122" r="5" fill="#273442" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="102" cy="122" r="5" fill="#273442" stroke="#ecddb9" stroke-width="1.5"/>
+          </g>
+          <!-- Happy person silhouette in car -->
+          <circle cx="87" cy="93" r="3" fill="#ecddb9" opacity="0.5"/>
+          <!-- Speed lines -->
+          <line x1="50" y1="108" x2="60" y2="108" stroke="rgba(236,221,185,0.3)" stroke-width="1">
+            <animate attributeName="x1" values="50;40;50" dur="0.8s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="60;50;60" dur="0.8s" repeatCount="indefinite"/>
+          </line>
+          <line x1="45" y1="113" x2="58" y2="113" stroke="rgba(236,221,185,0.2)" stroke-width="1">
+            <animate attributeName="x1" values="45;35;45" dur="0.8s" begin="0.2s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="58;48;58" dur="0.8s" begin="0.2s" repeatCount="indefinite"/>
+          </line>
+          <!-- Confetti / celebration -->
+          <circle cx="60" cy="60" r="3" fill="#e84249" opacity="0.6">
+            <animate attributeName="cy" values="60;50;60" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="120" cy="55" r="2" fill="#ecddb9" opacity="0.5">
+            <animate attributeName="cy" values="55;45;55" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+          </circle>
+          <rect x="95" y="58" width="4" height="4" fill="#e84249" opacity="0.4" transform="rotate(45 97 60)">
+            <animate attributeName="y" values="58;48;58" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+          </rect>
+          <rect x="75" y="50" width="3" height="3" fill="#ecddb9" opacity="0.3" transform="rotate(30 76 51)">
+            <animate attributeName="y" values="50;40;50" dur="2s" begin="0.7s" repeatCount="indefinite"/>
+          </rect>
+          <!-- Smile -->
+          <text x="55" y="75" font-size="28" opacity="0.15">🎉</text>
+        </svg>
+      </div>
+      <div class="scene-number">ÉTAPE 08</div>
+      <div class="scene-title">En <span class="beige">route</span> <span class="accent">!</span></div>
+      <div class="scene-desc">Le client repart au volant de son véhicule. Bienvenue à La Réunion, bonne route !</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="scroll-hint" id="scrollHint">
+  <span>DÉFILER</span>
+  <div class="arrow"></div>
+</div>
+
+<script>
+const scenes = document.querySelectorAll('.scene');
+const container = document.getElementById('sceneContainer');
+const indicator = document.getElementById('stepIndicator');
+const progressBar = document.getElementById('progressBar');
+const scrollHint = document.getElementById('scrollHint');
+let current = 0;
+let autoPlay = false;
+let autoInterval;
+const total = scenes.length;
+
+// Build dots
+scenes.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'step-dot';
+  dot.onclick = () => goTo(i);
+  indicator.appendChild(dot);
+});
+
+function goTo(index) {
+  if (index < 0 || index >= total) return;
+  current = index;
+  container.style.transform = `translateX(-${current * 100}vw)`;
+  
+  // Update dots
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+  
+  // Update scenes
+  scenes.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+  });
+  
+  // Progress bar
+  progressBar.style.width = `${((current + 1) / total) * 100}%`;
+  
+  // Nav buttons
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === total - 1;
+  
+  // Hide scroll hint after first move
+  if (current > 0) scrollHint.style.display = 'none';
+}
+
+// Auto play
+function toggleAuto() {
+  autoPlay = !autoPlay;
+  const btn = document.getElementById('autoToggle');
+  if (autoPlay) {
+    btn.textContent = '⏸ PAUSE';
+    btn.classList.add('playing');
+    autoInterval = setInterval(() => {
+      if (current >= total - 1) current = -1;
+      goTo(current + 1);
+    }, 4000);
+  } else {
+    btn.textContent = '▶ AUTO';
+    btn.classList.remove('playing');
+    clearInterval(autoInterval);
+  }
+}
+
+// Keyboard nav
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') goTo(current + 1);
+  if (e.key === 'ArrowLeft') goTo(current - 1);
+});
+
+// Touch / swipe
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+});
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+});
+
+// Mouse wheel
+document.addEventListener('wheel', (e) => {
+  if (e.deltaY > 20) goTo(current + 1);
+  else if (e.deltaY < -20) goTo(current - 1);
+}, { passive: true });
+
+// Init
+goTo(0);
+</script>
+</body>
+</html>
