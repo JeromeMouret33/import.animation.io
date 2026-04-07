@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOODCAR.RE - Comment fonctionne l'importation</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --blue: #273442;
+  --red: #e84249;
+  --beige: #ecddb9;
+  --white: #ffffff;
+}
+
+html, body {
+  overflow: hidden;
+  height: 100%;
+  background: var(--blue);
+  font-family: 'Outfit', sans-serif;
+  color: var(--white);
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--red);
+  z-index: 100;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* HEADER */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 60px 15px 12px;
+  z-index: 50;
+  text-align: center;
+  background: linear-gradient(to bottom, var(--blue) 70%, transparent);
+}
+.header-content {}
+.header-upper {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.header-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--white);
+}
+.header-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+/* STEP INDICATOR - vertical right side */
+.step-indicator {
+  position: fixed;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 50;
+}
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transition: all 0.4s ease;
+  cursor: pointer;
+  position: relative;
+}
+.step-dot.active {
+  background: var(--red);
+  height: 28px;
+  border-radius: 4px;
+}
+.step-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+.step-dot:hover::after,
+.step-dot.active::after {
+  color: rgba(255,255,255,0.4);
+}
+
+/* SCENE CONTAINER */
+.scene-container {
+  display: flex;
+  height: 100vh;
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* EACH SCENE */
+.scene {
+  min-width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* SUBTLE BG TEXTURE */
+.scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: 
+    radial-gradient(circle at 25% 45%, var(--beige) 0%, transparent 50%),
+    radial-gradient(circle at 75% 25%, var(--red) 0%, transparent 40%);
+}
+
+/* LAYOUT: icon left, text right */
+.scene-inner {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  max-width: 900px;
+  padding: 0 20px;
+  z-index: 2;
+}
+
+/* ICON SIDE */
+.icon-side {
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.7) rotate(-5deg);
+  transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+}
+.scene.active .icon-side {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.scene-icon {
+  width: 220px;
+  height: 220px;
+}
+
+/* TEXT SIDE */
+.text-side {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: all 0.6s ease 0.5s;
+}
+.scene.active .text-side {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scene-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.scene-title {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.scene-title .accent { color: var(--red); }
+.scene-title .beige { color: var(--beige); }
+
+.scene-desc {
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.5);
+  max-width: 380px;
+  line-height: 1.7;
+}
+
+/* VERTICAL LINE accent on text side */
+.text-side::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 30px;
+  background: var(--red);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.7s;
+}
+.scene.active .text-side::before {
+  opacity: 1;
+}
+
+/* NAV BUTTONS */
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--white);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.nav-btn:hover {
+  background: var(--red);
+  border-color: var(--red);
+}
+.nav-btn.prev { left: 8px; }
+.nav-btn.next { right: 8px; }
+.nav-btn:disabled { opacity: 0.15; pointer-events: none; }
+
+/* AUTO-PLAY */
+.auto-toggle {
+  position: fixed;
+  bottom: 10px;
+  right: 15px;
+  z-index: 50;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--beige);
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.auto-toggle:hover, .auto-toggle.playing {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+.auto-toggle.hovering {
+  background: rgba(232,66,73,0.15);
+  border-color: rgba(232,66,73,0.4);
+  color: var(--red);
+  animation: pauseBlink 1.5s ease-in-out infinite;
+}
+@keyframes pauseBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* BOTTOM STEP COUNTER */
+.step-counter {
+  position: fixed;
+  bottom: 10px;
+  left: 15px;
+  z-index: 50;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 2px;
+}
+.step-counter .current-num {
+  color: var(--white);
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* FLOATING PARTICLES */
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--beige);
+  border-radius: 50%;
+  opacity: 0;
+}
+.scene.active .particle {
+  animation: particleDrift 4s ease-in-out infinite;
+}
+@keyframes particleDrift {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  50% { opacity: 0.2; transform: translate(10px, -15px); }
+}
+
+/* ===== ICON ANIMATIONS ===== */
+
+/* Scene 1 - Qualification */
+.target-pulse circle.ring {
+  animation: ringPulse 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+.checklist-write {
+  animation: writeCheck 3s ease-in-out infinite;
+}
+@keyframes writeCheck {
+  0%, 100% { stroke-dashoffset: 0; }
+  50% { stroke-dashoffset: 5; }
+}
+
+/* Scene 2 - Recherche */
+.search-scan {
+  animation: scanMove 3s ease-in-out infinite;
+}
+@keyframes scanMove {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  30% { transform: translateX(8px) translateY(-3px); }
+  60% { transform: translateX(-5px) translateY(5px); }
+}
+.car-highlight {
+  animation: carGlow 2s ease-in-out infinite;
+}
+@keyframes carGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(232,66,73,0)); }
+  50% { filter: drop-shadow(0 0 8px rgba(232,66,73,0.4)); }
+}
+
+/* Scene 3 - Validation */
+.stamp-drop {
+  animation: stampAnim 3s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes stampAnim {
+  0%, 70%, 100% { transform: translateY(0) scale(1); }
+  75% { transform: translateY(-5px) scale(1.05); }
+  80% { transform: translateY(0) scale(0.98); }
+  85% { transform: translateY(0) scale(1); }
+}
+
+/* Scene 4 - Logistique */
+.boat-rock {
+  animation: boatRock 3.5s ease-in-out infinite;
+}
+@keyframes boatRock {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(1.5deg); }
+  75% { transform: translateY(3px) rotate(-1deg); }
+}
+.route-dash {
+  animation: dashFlow 1.5s linear infinite;
+}
+@keyframes dashFlow {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -16; }
+}
+
+/* Scene 5 - Réception */
+.key-handover {
+  animation: keySwing 2s ease-in-out infinite;
+  transform-origin: 90px 70px;
+}
+@keyframes keySwing {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-3deg); }
+}
+.sparkle {
+  animation: sparklePop 1.8s ease-in-out infinite;
+}
+@keyframes sparklePop {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .scene-inner {
+    flex-direction: column;
+    gap: 30px;
+    text-align: center;
+    padding: 80px 30px 100px;
+  }
+  .scene-icon { width: 150px; height: 150px; }
+  .step-indicator { display: none; }
+  .header-desc { display: none; }
+  .text-side::before { margin: 0 auto 16px; }
+  .nav-btn.next { right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-upper">COMMENT FONCTIONNE</div>
+    <div class="header-title">L'importation</div>
+    <div class="header-desc">De la définition du besoin à la mise à disposition du véhicule, chaque étape est cadrée</div>
+  </div>
+</div>
+
+<button class="nav-btn prev" id="prevBtn" onclick="goTo(current-1)">‹</button>
+<button class="nav-btn next" id="nextBtn" onclick="goTo(current+1)">›</button>
+
+<div class="step-indicator" id="stepIndicator"></div>
+
+<div class="step-counter">
+  <span class="current-num" id="currentNum">1</span> / 5
+</div>
+
+<button class="auto-toggle" id="autoToggle" onclick="toggleAuto()">▶ AUTO</button>
+
+<div class="scene-container" id="sceneContainer">
+
+  <!-- ===== SCENE 1: Qualification du projet ===== -->
+  <div class="scene" data-index="0" data-label="QUALIFICATION">
+    <div class="particle" style="top:18%;left:12%;animation-delay:0s;"></div>
+    <div class="particle" style="top:72%;left:82%;animation-delay:1.2s;"></div>
+    <div class="particle" style="top:45%;left:65%;animation-delay:2.4s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Clipboard -->
+          <rect x="50" y="30" width="120" height="160" rx="8" fill="rgba(236,221,185,0.04)" stroke="#ecddb9" stroke-width="2"/>
+          <rect x="80" y="20" width="60" height="20" rx="6" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.5"/>
+          <circle cx="110" cy="30" r="4" fill="#e84249"/>
+          
+          <!-- Checklist lines -->
+          <g>
+            <!-- Item 1 - checked -->
+            <rect x="70" y="65" width="16" height="16" rx="3" fill="rgba(232,66,73,0.15)" stroke="#e84249" stroke-width="1.2"/>
+            <path d="M74 73 L78 77 L84 69" fill="none" stroke="#e84249" stroke-width="2" stroke-linecap="round" class="checklist-write"/>
+            <line x1="96" y1="73" x2="150" y2="73" stroke="rgba(236,221,185,0.25)" stroke-width="1.2"/>
+            
+            <!-- Item 2 - checked -->
+            <rect x="70" y="95" width="16" height="16" rx="3" fill="rgba(232,66,73,0.15)" stroke="#e84249" stroke-width="1.2"/>
+            <path d="M74 103 L78 107 L84 99" fill="none" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+            <line x1="96" y1="103" x2="145" y2="103" stroke="rgba(236,221,185,0.25)" stroke-width="1.2"/>
+            
+            <!-- Item 3 - unchecked -->
+            <rect x="70" y="125" width="16" height="16" rx="3" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="1.2"/>
+            <line x1="96" y1="133" x2="140" y2="133" stroke="rgba(236,221,185,0.15)" stroke-width="1.2"/>
+            
+            <!-- Item 4 - unchecked -->
+            <rect x="70" y="155" width="16" height="16" rx="3" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="1.2"/>
+            <line x1="96" y1="163" x2="135" y2="163" stroke="rgba(236,221,185,0.15)" stroke-width="1.2"/>
+          </g>
+          
+          <!-- Target / budget circle -->
+          <g class="target-pulse" transform="translate(160, 155)">
+            <circle class="ring" cx="0" cy="0" r="22" fill="none" stroke="rgba(232,66,73,0.2)" stroke-width="1"/>
+            <circle class="ring" cx="0" cy="0" r="14" fill="none" stroke="rgba(232,66,73,0.3)" stroke-width="1" style="animation-delay:0.3s"/>
+            <circle cx="0" cy="0" r="5" fill="#e84249" opacity="0.8"/>
+            <text x="-4" y="4" fill="#fff" font-size="6" font-weight="bold" font-family="Space Mono">€</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">1</div>
+        <div class="scene-title">Qualification du <span class="accent">projet</span></div>
+        <div class="scene-desc">Analyse de votre besoin, définition du budget global et validation des critères du véhicule. Le cadre est posé avant toute recherche.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 2: Recherche & vérifications ===== -->
+  <div class="scene" data-index="1" data-label="RECHERCHE">
+    <div class="particle" style="top:25%;left:20%;animation-delay:0.4s;"></div>
+    <div class="particle" style="top:60%;left:75%;animation-delay:1.6s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Car cards -->
+          <!-- Card 1 (back) -->
+          <rect x="30" y="50" width="100" height="70" rx="6" fill="rgba(236,221,185,0.03)" stroke="rgba(236,221,185,0.15)" stroke-width="1" transform="rotate(-5 80 85)"/>
+          
+          <!-- Card 2 (middle) -->
+          <rect x="45" y="42" width="100" height="70" rx="6" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.2)" stroke-width="1.2"/>
+          <g transform="translate(55, 52)">
+            <rect x="0" y="8" width="35" height="13" rx="3" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="0.8"/>
+            <path d="M4 8 L8 0 L27 0 L31 8" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="0.8"/>
+            <circle cx="8" cy="23" r="3" fill="none" stroke="rgba(236,221,185,0.15)" stroke-width="0.8"/>
+            <circle cx="27" cy="23" r="3" fill="none" stroke="rgba(236,221,185,0.15)" stroke-width="0.8"/>
+          </g>
+          <line x1="55" y1="88" x2="130" y2="88" stroke="rgba(236,221,185,0.1)" stroke-width="0.8"/>
+          <line x1="55" y1="96" x2="115" y2="96" stroke="rgba(236,221,185,0.08)" stroke-width="0.8"/>
+          
+          <!-- Card 3 (front - selected) -->
+          <g class="car-highlight">
+            <rect x="60" y="35" width="100" height="70" rx="6" fill="rgba(232,66,73,0.06)" stroke="#e84249" stroke-width="1.5"/>
+            <g transform="translate(70, 44)">
+              <rect x="0" y="8" width="38" height="14" rx="3" fill="rgba(232,66,73,0.1)" stroke="#e84249" stroke-width="1.2"/>
+              <path d="M5 8 L10 -2 L28 -2 L33 8" fill="none" stroke="#e84249" stroke-width="1.2"/>
+              <circle cx="9" cy="24" r="3.5" fill="none" stroke="#ecddb9" stroke-width="1"/>
+              <circle cx="29" cy="24" r="3.5" fill="none" stroke="#ecddb9" stroke-width="1"/>
+            </g>
+            <!-- Check badge -->
+            <circle cx="150" cy="42" r="10" fill="#e84249" opacity="0.9"/>
+            <path d="M145 42 L148 45 L155 38" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <line x1="70" y1="82" x2="148" y2="82" stroke="rgba(232,66,73,0.2)" stroke-width="0.8"/>
+            <line x1="70" y1="90" x2="130" y2="90" stroke="rgba(232,66,73,0.15)" stroke-width="0.8"/>
+          </g>
+          
+          <!-- Search / magnifier -->
+          <g class="search-scan" transform="translate(130, 125)">
+            <circle cx="0" cy="0" r="20" fill="none" stroke="rgba(236,221,185,0.3)" stroke-width="1.8"/>
+            <line x1="14" y1="14" x2="28" y2="28" stroke="rgba(236,221,185,0.3)" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- VIN text inside magnifier -->
+            <text x="-10" y="4" fill="rgba(236,221,185,0.4)" font-size="7" font-family="Space Mono">VIN</text>
+          </g>
+          
+          <!-- Verification badge -->
+          <g transform="translate(40, 145)">
+            <rect x="0" y="0" width="55" height="22" rx="4" fill="rgba(236,221,185,0.05)" stroke="rgba(236,221,185,0.15)" stroke-width="0.8"/>
+            <text x="8" y="15" fill="rgba(236,221,185,0.35)" font-size="7" font-family="Space Mono">HISTOVEC</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">2</div>
+        <div class="scene-title">Recherche & <span class="beige">vérifications</span></div>
+        <div class="scene-desc">Sélection du véhicule, contrôle du VIN, analyse de l'historique et validation du fournisseur. Chaque option est étudiée avec rigueur.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 3: Validation & encadrement financier ===== -->
+  <div class="scene" data-index="2" data-label="VALIDATION">
+    <div class="particle" style="top:30%;left:30%;animation-delay:0.8s;"></div>
+    <div class="particle" style="top:55%;left:68%;animation-delay:2s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Calculator / financial doc -->
+          <rect x="35" y="30" width="90" height="120" rx="6" fill="rgba(236,221,185,0.04)" stroke="#ecddb9" stroke-width="1.5"/>
+          <!-- Screen -->
+          <rect x="45" y="42" width="70" height="28" rx="3" fill="rgba(236,221,185,0.06)" stroke="rgba(236,221,185,0.15)" stroke-width="0.8"/>
+          <text x="55" y="62" fill="#ecddb9" font-size="14" font-family="Space Mono" opacity="0.7">€ ---</text>
+          <!-- Buttons -->
+          <rect x="45" y="80" width="20" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+          <rect x="70" y="80" width="20" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+          <rect x="95" y="80" width="20" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+          <rect x="45" y="100" width="20" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+          <rect x="70" y="100" width="20" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+          <rect x="95" y="100" width="20" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+          <rect x="45" y="120" width="70" height="14" rx="2" fill="rgba(232,66,73,0.15)" stroke="#e84249" stroke-width="0.8"/>
+          <text x="70" y="130" fill="#e84249" font-size="7" font-family="Space Mono" text-anchor="middle">VALIDER</text>
+          
+          <!-- Stamp overlay -->
+          <g class="stamp-drop" transform="translate(145, 70)">
+            <circle cx="0" cy="0" r="30" fill="none" stroke="#e84249" stroke-width="2" opacity="0.4"/>
+            <circle cx="0" cy="0" r="22" fill="none" stroke="#e84249" stroke-width="1" opacity="0.25"/>
+            <text x="-16" y="5" fill="#e84249" font-size="10" font-weight="bold" font-family="Space Mono" opacity="0.7">VALID</text>
+          </g>
+          
+          <!-- Security shield -->
+          <g transform="translate(145, 140)">
+            <path d="M0 -20 L18 -12 L18 5 Q18 18 0 25 Q-18 18 -18 5 L-18 -12 Z" fill="rgba(236,221,185,0.05)" stroke="#ecddb9" stroke-width="1.2"/>
+            <path d="M-5 0 L-1 4 L8 -5" fill="none" stroke="#ecddb9" stroke-width="2" stroke-linecap="round"/>
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+          </g>
+          
+          <!-- Euro coins -->
+          <circle cx="55" cy="175" r="10" fill="rgba(236,221,185,0.08)" stroke="#ecddb9" stroke-width="1">
+            <animate attributeName="cy" values="175;170;175" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <text x="51" y="179" fill="#ecddb9" font-size="9" font-family="Space Mono" opacity="0.5">€</text>
+          
+          <circle cx="80" cy="180" r="8" fill="rgba(232,66,73,0.08)" stroke="#e84249" stroke-width="0.8">
+            <animate attributeName="cy" values="180;174;180" dur="3s" begin="0.4s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">3</div>
+        <div class="scene-title">Validation & <span class="accent">encadrement financier</span></div>
+        <div class="scene-desc">Simulation fiscale complète et organisation du paiement sécurisé. Vous validez chaque étape ou nous pilotons l'ensemble selon le niveau d'accompagnement choisi.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 4: Logistique & coordination ===== -->
+  <div class="scene" data-index="3" data-label="LOGISTIQUE">
+    <div class="particle" style="top:22%;left:18%;animation-delay:0.6s;"></div>
+    <div class="particle" style="top:68%;left:78%;animation-delay:1.8s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Globe -->
+          <circle cx="110" cy="90" r="60" fill="none" stroke="rgba(236,221,185,0.12)" stroke-width="1.2"/>
+          <ellipse cx="110" cy="90" rx="30" ry="60" fill="none" stroke="rgba(236,221,185,0.07)" stroke-width="0.8"/>
+          <line x1="50" y1="90" x2="170" y2="90" stroke="rgba(236,221,185,0.06)" stroke-width="0.8"/>
+          <ellipse cx="110" cy="70" rx="55" ry="15" fill="none" stroke="rgba(236,221,185,0.05)" stroke-width="0.8"/>
+          <ellipse cx="110" cy="110" rx="55" ry="15" fill="none" stroke="rgba(236,221,185,0.05)" stroke-width="0.8"/>
+          
+          <!-- Route EU → 974 -->
+          <path d="M72 62 Q88 82 105 88 Q122 94 145 108 Q155 115 158 122" fill="none" stroke="#e84249" stroke-width="2" stroke-dasharray="4 4" class="route-dash"/>
+          
+          <!-- EU point -->
+          <circle cx="72" cy="62" r="5" fill="#ecddb9"/>
+          <text x="55" y="55" fill="#ecddb9" font-size="8" font-family="Space Mono" opacity="0.7">EU</text>
+          
+          <!-- Réunion point -->
+          <circle cx="158" cy="122" r="5" fill="#e84249">
+            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <text x="142" y="140" fill="#e84249" font-size="8" font-family="Space Mono">974</text>
+          
+          <!-- Boat on route -->
+          <g class="boat-rock">
+            <g transform="translate(105, 85)">
+              <path d="M-12 0 L-8 8 L8 8 L12 0 Z" fill="rgba(236,221,185,0.1)" stroke="#ecddb9" stroke-width="1"/>
+              <rect x="-4" y="-6" width="8" height="6" rx="1" fill="none" stroke="#ecddb9" stroke-width="0.8"/>
+            </g>
+          </g>
+          
+          <!-- Document / douane -->
+          <g transform="translate(30, 155)">
+            <rect x="0" y="0" width="45" height="35" rx="3" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.2)" stroke-width="1"/>
+            <line x1="8" y1="10" x2="37" y2="10" stroke="rgba(236,221,185,0.15)" stroke-width="0.6"/>
+            <line x1="8" y1="17" x2="33" y2="17" stroke="rgba(236,221,185,0.15)" stroke-width="0.6"/>
+            <line x1="8" y1="24" x2="28" y2="24" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+            <text x="5" y="7" fill="rgba(236,221,185,0.3)" font-size="5" font-family="Space Mono">DOUANE</text>
+          </g>
+          
+          <!-- Tracking / suivi -->
+          <g transform="translate(140, 160)">
+            <rect x="0" y="0" width="50" height="30" rx="3" fill="rgba(232,66,73,0.06)" stroke="rgba(232,66,73,0.25)" stroke-width="1"/>
+            <text x="6" y="12" fill="#e84249" font-size="6" font-family="Space Mono" opacity="0.6">SUIVI</text>
+            <!-- Mini progress bar -->
+            <rect x="6" y="18" width="38" height="4" rx="2" fill="rgba(255,255,255,0.05)"/>
+            <rect x="6" y="18" width="26" height="4" rx="2" fill="rgba(232,66,73,0.4)">
+              <animate attributeName="width" values="10;26;38;10" dur="4s" repeatCount="indefinite"/>
+            </rect>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">4</div>
+        <div class="scene-title">Logistique & <span class="beige">coordination</span></div>
+        <div class="scene-desc">Organisation du transport, gestion documentaire et suivi douanier jusqu'à l'arrivée à La Réunion. Le processus est supervisé de bout en bout.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 5: Réception & finalisation ===== -->
+  <div class="scene" data-index="4" data-label="RÉCEPTION">
+    <div class="particle" style="top:20%;left:15%;animation-delay:0.2s;"></div>
+    <div class="particle" style="top:50%;left:80%;animation-delay:1s;"></div>
+    <div class="particle" style="top:75%;left:35%;animation-delay:2.2s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Car -->
+          <g transform="translate(30, 60)">
+            <rect x="20" y="30" width="75" height="28" rx="8" fill="rgba(232,66,73,0.1)" stroke="#e84249" stroke-width="2"/>
+            <path d="M30 30 L42 10 L73 10 L85 30" fill="rgba(232,66,73,0.06)" stroke="#e84249" stroke-width="1.5"/>
+            <!-- Windows -->
+            <path d="M40 30 L47 16 L57 16 L57 30" fill="rgba(236,221,185,0.06)" stroke="rgba(236,221,185,0.15)" stroke-width="0.5"/>
+            <path d="M60 30 L60 16 L70 16 L78 30" fill="rgba(236,221,185,0.06)" stroke="rgba(236,221,185,0.15)" stroke-width="0.5"/>
+            <!-- Wheels -->
+            <circle cx="38" cy="60" r="7" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.8"/>
+            <circle cx="38" cy="60" r="3" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="0.5"/>
+            <circle cx="77" cy="60" r="7" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.8"/>
+            <circle cx="77" cy="60" r="3" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="0.5"/>
+          </g>
+          
+          <!-- Key handover -->
+          <g class="key-handover" transform="translate(0, 0)">
+            <g transform="translate(145, 55)">
+              <circle cx="0" cy="0" r="9" fill="none" stroke="#e84249" stroke-width="2"/>
+              <circle cx="0" cy="0" r="4" fill="none" stroke="rgba(232,66,73,0.3)" stroke-width="0.8"/>
+              <line x1="9" y1="0" x2="30" y2="0" stroke="#e84249" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="22" y1="0" x2="22" y2="7" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+              <line x1="28" y1="0" x2="28" y2="7" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+            </g>
+          </g>
+          
+          <!-- Checkmark shield (contrôle) -->
+          <g transform="translate(55, 150)">
+            <path d="M0 -15 L14 -9 L14 4 Q14 14 0 20 Q-14 14 -14 4 L-14 -9 Z" fill="rgba(236,221,185,0.06)" stroke="#ecddb9" stroke-width="1.5"/>
+            <path d="M-5 1 L-1 5 L7 -3" fill="none" stroke="#ecddb9" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <text x="35" y="180" fill="rgba(236,221,185,0.3)" font-size="7" font-family="Space Mono">CONTRÔLE OK</text>
+          
+          <!-- Sparkles / celebration -->
+          <g class="sparkle">
+            <line x1="150" y1="100" x2="158" y2="92" stroke="#ecddb9" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="162" y1="108" x2="170" y2="100" stroke="#e84249" stroke-width="1.2" stroke-linecap="round"/>
+          </g>
+          <g class="sparkle" style="animation-delay:0.5s;">
+            <line x1="140" y1="118" x2="148" y2="110" stroke="#ecddb9" stroke-width="1" stroke-linecap="round"/>
+          </g>
+          <g class="sparkle" style="animation-delay:1s;">
+            <circle cx="175" cy="85" r="2.5" fill="#e84249" opacity="0.6"/>
+            <circle cx="135" cy="130" r="2" fill="#ecddb9" opacity="0.4"/>
+          </g>
+          
+          <!-- GOODCAR badge -->
+          <g transform="translate(120, 155)">
+            <rect x="0" y="0" width="70" height="25" rx="5" fill="rgba(232,66,73,0.08)" stroke="#e84249" stroke-width="1"/>
+            <text x="8" y="16" fill="#e84249" font-size="9" font-weight="bold" font-family="Outfit" letter-spacing="1">GOODCAR</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">5</div>
+        <div class="scene-title">Réception & <span class="accent">finalisation</span></div>
+        <div class="scene-desc">Contrôle à l'arrivée et mise à disposition du véhicule. Votre import est maîtrisé, structuré et sécurisé.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const scenes = document.querySelectorAll('.scene');
+const container = document.getElementById('sceneContainer');
+const indicator = document.getElementById('stepIndicator');
+const progressBar = document.getElementById('progressBar');
+const currentNum = document.getElementById('currentNum');
+let current = 0;
+let autoPlay = false;
+let autoInterval;
+const total = scenes.length;
+
+// Build vertical dots
+scenes.forEach((s, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'step-dot';
+  dot.setAttribute('data-label', s.getAttribute('data-label') || '');
+  dot.onclick = () => goTo(i);
+  indicator.appendChild(dot);
+});
+
+function goTo(index) {
+  if (index < 0 || index >= total) return;
+  current = index;
+  container.style.transform = `translateX(-${current * 100}vw)`;
+  
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+  
+  scenes.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+  });
+  
+  progressBar.style.width = `${((current + 1) / total) * 100}%`;
+  currentNum.textContent = current + 1;
+  
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === total - 1;
+}
+
+function toggleAuto() {
+  autoPlay = !autoPlay;
+  updateAutoBtn();
+  if (autoPlay) {
+    startAutoInterval();
+  } else {
+    clearInterval(autoInterval);
+  }
+}
+
+function startAutoInterval() {
+  clearInterval(autoInterval);
+  autoInterval = setInterval(() => {
+    if (current >= total - 1) current = -1;
+    goTo(current + 1);
+  }, 5000);
+}
+
+function updateAutoBtn() {
+  const btn = document.getElementById('autoToggle');
+  if (!autoPlay) {
+    btn.innerHTML = '▶ <span>AUTO</span>';
+    btn.classList.remove('playing', 'hovering');
+  } else if (hoverPaused) {
+    btn.innerHTML = '⏸ <span>EN PAUSE</span>';
+    btn.classList.remove('playing');
+    btn.classList.add('hovering');
+  } else {
+    btn.innerHTML = '⏸ <span>PAUSE</span>';
+    btn.classList.add('playing');
+    btn.classList.remove('hovering');
+  }
+}
+
+// Hover pause
+let hoverPaused = false;
+const sceneContainer = document.getElementById('sceneContainer');
+
+sceneContainer.addEventListener('mouseenter', () => {
+  if (!autoPlay) return;
+  hoverPaused = true;
+  clearInterval(autoInterval);
+  updateAutoBtn();
+});
+
+sceneContainer.addEventListener('mouseleave', () => {
+  if (!autoPlay) return;
+  hoverPaused = false;
+  startAutoInterval();
+  updateAutoBtn();
+});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+  if (e.key === 'ArrowLeft') goTo(current - 1);
+});
+
+// Touch
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+});
+
+// Init
+goTo(0);
+
+// Ne démarrer l'auto-play que quand l'animation est visible
+function startWhenVisible() {
+  // Si on est dans un iFrame, on utilise IntersectionObserver sur le document
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !autoPlay) {
+        toggleAuto();
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(document.body);
+}
+
+// Fallback : si pas dans un iFrame ou si l'observer ne se déclenche pas
+// On vérifie aussi via le focus/visibilité de la page
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !autoPlay && current === 0) {
+    toggleAuto();
+  }
+});
+
+// Lancer l'observation
+if (window.self !== window.top) {
+  // Dans un iFrame : attendre d'être visible
+  startWhenVisible();
+} else {
+  // Hors iFrame : démarrer direct
+  toggleAuto();
+}
+</script>
+</body>
+</html>
