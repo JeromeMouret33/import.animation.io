@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOODCAR.RE - Comment fonctionne la transaction</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --blue: #273442;
+  --red: #e84249;
+  --beige: #ecddb9;
+  --white: #ffffff;
+}
+
+html, body {
+  overflow: hidden;
+  height: 100%;
+  background: var(--blue);
+  font-family: 'Outfit', sans-serif;
+  color: var(--white);
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--red);
+  z-index: 100;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* HEADER */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 60px 15px 12px;
+  z-index: 50;
+  text-align: center;
+  background: linear-gradient(to bottom, var(--blue) 70%, transparent);
+}
+.header-content {}
+.header-upper {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.header-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--white);
+}
+.header-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+.header-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 14px;
+  border-radius: 12px;
+  background: rgba(232,66,73,0.1);
+  border: 1px solid rgba(232,66,73,0.25);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--red);
+}
+
+/* STEP INDICATOR - vertical right side */
+.step-indicator {
+  position: fixed;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 50;
+}
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transition: all 0.4s ease;
+  cursor: pointer;
+  position: relative;
+}
+.step-dot.active {
+  background: var(--red);
+  height: 28px;
+  border-radius: 4px;
+}
+.step-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+.step-dot:hover::after,
+.step-dot.active::after {
+  color: rgba(255,255,255,0.4);
+}
+
+/* SCENE CONTAINER */
+.scene-container {
+  display: flex;
+  height: 100vh;
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* EACH SCENE */
+.scene {
+  min-width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* No background texture - solid color */
+.scene::before {
+  display: none;
+}
+
+/* LAYOUT: icon left, text right */
+.scene-inner {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  max-width: 900px;
+  padding: 0 60px;
+  z-index: 2;
+}
+
+/* ICON SIDE */
+.icon-side {
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.7) rotate(-5deg);
+  transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+}
+.scene.active .icon-side {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.scene-icon {
+  width: 220px;
+  height: 220px;
+}
+
+/* TEXT SIDE */
+.text-side {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: all 0.6s ease 0.5s;
+}
+.scene.active .text-side {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scene-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.scene-title {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.scene-title .accent { color: var(--red); }
+.scene-title .beige { color: var(--beige); }
+
+.scene-desc {
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.5);
+  max-width: 380px;
+  line-height: 1.7;
+}
+
+.scene-badge {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 6px 16px;
+  border-radius: 14px;
+  background: rgba(232,66,73,0.1);
+  border: 1px solid rgba(232,66,73,0.25);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--red);
+}
+.scene-badge span {
+  font-weight: 400;
+  font-size: 9px;
+  opacity: 0.6;
+}
+
+/* VERTICAL LINE accent on text side */
+.text-side::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 30px;
+  background: var(--red);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.7s;
+}
+.scene.active .text-side::before {
+  opacity: 1;
+}
+
+/* NAV BUTTONS */
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--white);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.nav-btn:hover {
+  background: var(--red);
+  border-color: var(--red);
+}
+.nav-btn.prev { left: 8px; }
+.nav-btn.next { right: 8px; }
+.nav-btn:disabled { opacity: 0.15; pointer-events: none; }
+
+/* AUTO-PLAY */
+.auto-toggle {
+  position: fixed;
+  bottom: 10px;
+  right: 30px;
+  z-index: 50;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--beige);
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.auto-toggle:hover, .auto-toggle.playing {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+.auto-toggle.hovering {
+  background: rgba(232,66,73,0.15);
+  border-color: rgba(232,66,73,0.4);
+  color: var(--red);
+  animation: pauseBlink 1.5s ease-in-out infinite;
+}
+@keyframes pauseBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* BOTTOM STEP COUNTER */
+.step-counter {
+  position: fixed;
+  bottom: 14px;
+  left: 30px;
+  z-index: 50;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 2px;
+}
+.step-counter .current-num {
+  color: var(--white);
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* FLOATING PARTICLES */
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--beige);
+  border-radius: 50%;
+  opacity: 0;
+}
+.scene.active .particle {
+  animation: particleDrift 4s ease-in-out infinite;
+}
+@keyframes particleDrift {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  50% { opacity: 0.2; transform: translate(10px, -15px); }
+}
+
+/* ===== ICON ANIMATIONS ===== */
+
+/* Scene 1 - Qualification véhicule */
+.scan-line {
+  animation: scanDown 2.5s ease-in-out infinite;
+}
+@keyframes scanDown {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(60px); opacity: 1; }
+}
+
+.doc-check {
+  animation: docPulse 2s ease-in-out infinite;
+}
+@keyframes docPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Scene 2 - Structuration */
+.folder-stack {
+  animation: stackBuild 3s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+@keyframes stackBuild {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Scene 3 - Mise en relation */
+.handshake-move {
+  animation: handshakeAnim 2.5s ease-in-out infinite;
+}
+@keyframes handshakeAnim {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+}
+
+.person-pulse {
+  animation: personGlow 2s ease-in-out infinite;
+}
+@keyframes personGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(232,66,73,0)); }
+  50% { filter: drop-shadow(0 0 6px rgba(232,66,73,0.3)); }
+}
+
+/* Scene 4 - Sécurisation */
+.lock-pulse {
+  animation: lockAnim 2s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes lockAnim {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.shield-glow {
+  animation: shieldGlow 3s ease-in-out infinite;
+}
+@keyframes shieldGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(236,221,185,0)); opacity: 0.7; }
+  50% { filter: drop-shadow(0 0 8px rgba(236,221,185,0.2)); opacity: 1; }
+}
+
+/* Scene 5 - Finalisation */
+.key-handover {
+  animation: keySwing 2s ease-in-out infinite;
+  transform-origin: 90px 70px;
+}
+@keyframes keySwing {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-3deg); }
+}
+.sparkle {
+  animation: sparklePop 1.8s ease-in-out infinite;
+}
+@keyframes sparklePop {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .scene-inner {
+    flex-direction: column;
+    gap: 30px;
+    text-align: center;
+    padding: 80px 30px 100px;
+  }
+  .scene-icon { width: 150px; height: 150px; }
+  .step-indicator { display: none; }
+  .header-desc { display: none; }
+  .header-badge { display: none; }
+  .text-side::before { margin: 0 auto 16px; }
+  .nav-btn.next { right: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-upper">COMMENT FONCTIONNE</div>
+    <div class="header-title">La transaction</div>
+    <div class="header-desc">Un cadre structuré pour protéger acheteur et vendeur</div>
+  </div>
+</div>
+
+<button class="nav-btn prev" id="prevBtn" onclick="goTo(current-1)">‹</button>
+<button class="nav-btn next" id="nextBtn" onclick="goTo(current+1)">›</button>
+
+<div class="step-indicator" id="stepIndicator"></div>
+
+<div class="step-counter">
+  <span class="current-num" id="currentNum">1</span> / 5
+</div>
+
+<button class="auto-toggle" id="autoToggle" onclick="toggleAuto()">▶ AUTO</button>
+
+<div class="scene-container" id="sceneContainer">
+
+  <!-- ===== SCENE 1: Qualification du véhicule ===== -->
+  <div class="scene" data-index="0" data-label="QUALIFICATION">
+    <div class="particle" style="top:18%;left:12%;animation-delay:0s;"></div>
+    <div class="particle" style="top:72%;left:82%;animation-delay:1.2s;"></div>
+    <div class="particle" style="top:45%;left:65%;animation-delay:2.4s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Car being inspected -->
+          <g transform="translate(30, 45)">
+            <rect x="15" y="35" width="70" height="24" rx="6" fill="rgba(236,221,185,0.06)" stroke="#ecddb9" stroke-width="1.5"/>
+            <path d="M25 35 L35 18 L65 18 L75 35" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="32" cy="62" r="6" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="68" cy="62" r="6" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.5"/>
+          </g>
+          
+          <!-- Scan line over car -->
+          <g class="scan-line">
+            <line x1="30" y1="50" x2="130" y2="50" stroke="#e84249" stroke-width="1.5" opacity="0.6"/>
+            <line x1="30" y1="50" x2="30" y2="46" stroke="#e84249" stroke-width="1.5"/>
+            <line x1="130" y1="50" x2="130" y2="46" stroke="#e84249" stroke-width="1.5"/>
+          </g>
+          
+          <!-- Document check -->
+          <g transform="translate(135, 30)" class="doc-check">
+            <rect x="0" y="0" width="55" height="72" rx="4" fill="rgba(236,221,185,0.04)" stroke="#ecddb9" stroke-width="1.2"/>
+            <rect x="8" y="8" width="20" height="14" rx="2" fill="rgba(232,66,73,0.1)" stroke="#e84249" stroke-width="0.8"/>
+            <text x="12" y="18" fill="#e84249" font-size="6" font-family="Space Mono">CG</text>
+            <line x1="8" y1="30" x2="47" y2="30" stroke="rgba(236,221,185,0.2)" stroke-width="0.8"/>
+            <line x1="8" y1="38" x2="42" y2="38" stroke="rgba(236,221,185,0.15)" stroke-width="0.8"/>
+            <line x1="8" y1="46" x2="38" y2="46" stroke="rgba(236,221,185,0.12)" stroke-width="0.8"/>
+            <!-- Check -->
+            <circle cx="42" cy="60" r="8" fill="rgba(232,66,73,0.15)" stroke="#e84249" stroke-width="1.2"/>
+            <path d="M37 60 L40 63 L47 56" fill="none" stroke="#e84249" stroke-width="1.8" stroke-linecap="round"/>
+          </g>
+          
+          <!-- Magnifier on VIN -->
+          <g transform="translate(40, 130)">
+            <rect x="0" y="0" width="80" height="28" rx="3" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.2)" stroke-width="1"/>
+            <text x="8" y="11" fill="rgba(236,221,185,0.3)" font-size="5" font-family="Space Mono">N° SÉRIE</text>
+            <text x="8" y="22" fill="#ecddb9" font-size="8" font-family="Space Mono" opacity="0.5">VF3XXXXX...</text>
+          </g>
+          <g transform="translate(130, 140)">
+            <circle cx="0" cy="0" r="16" fill="none" stroke="rgba(236,221,185,0.25)" stroke-width="1.5"/>
+            <line x1="11" y1="11" x2="22" y2="22" stroke="rgba(236,221,185,0.25)" stroke-width="2" stroke-linecap="round"/>
+            <text x="-6" y="4" fill="rgba(236,221,185,0.35)" font-size="7" font-family="Space Mono">CT</text>
+          </g>
+          
+          <!-- Status badge -->
+          <g transform="translate(30, 170)">
+            <rect x="0" y="0" width="120" height="24" rx="12" fill="rgba(232,66,73,0.1)" stroke="rgba(232,66,73,0.3)" stroke-width="1"/>
+            <circle cx="16" cy="12" r="4" fill="#e84249" opacity="0.8">
+              <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <text x="28" y="16" fill="#e84249" font-size="9" font-family="Space Mono" font-weight="700">EXPERTISE</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">1</div>
+        <div class="scene-title">Qualification du <span class="accent">véhicule</span></div>
+        <div class="scene-desc">Vérification administrative, contrôle des documents et première analyse des éléments techniques. La base est saine avant toute mise en relation.</div>
+        <div class="scene-badge">15 ANS · 150 000 KM* <span>(selon conditions)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 2: Structuration du dossier ===== -->
+  <div class="scene" data-index="1" data-label="DOSSIER">
+    <div class="particle" style="top:25%;left:20%;animation-delay:0.4s;"></div>
+    <div class="particle" style="top:60%;left:75%;animation-delay:1.6s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Folder stack -->
+          <g class="folder-stack">
+            <!-- Folder back -->
+            <path d="M35 70 L35 55 L65 55 L72 62 L170 62 L170 160 L35 160 Z" fill="rgba(236,221,185,0.03)" stroke="rgba(236,221,185,0.15)" stroke-width="1"/>
+            <!-- Folder front -->
+            <path d="M40 80 L40 65 L68 65 L75 72 L175 72 L175 165 L40 165 Z" fill="rgba(236,221,185,0.05)" stroke="#ecddb9" stroke-width="1.5"/>
+          </g>
+          
+          <!-- Documents inside -->
+          <g transform="translate(55, 85)">
+            <!-- Doc 1 -->
+            <rect x="0" y="0" width="50" height="35" rx="2" fill="rgba(232,66,73,0.06)" stroke="#e84249" stroke-width="1"/>
+            <line x1="6" y1="8" x2="44" y2="8" stroke="rgba(232,66,73,0.2)" stroke-width="0.6"/>
+            <line x1="6" y1="14" x2="38" y2="14" stroke="rgba(232,66,73,0.15)" stroke-width="0.6"/>
+            <line x1="6" y1="20" x2="32" y2="20" stroke="rgba(232,66,73,0.12)" stroke-width="0.6"/>
+            <text x="6" y="31" fill="#e84249" font-size="7" font-family="Space Mono" font-weight="700" opacity="0.6">CONTRAT</text>
+            
+            <!-- Doc 2 -->
+            <rect x="58" y="0" width="50" height="35" rx="2" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.2)" stroke-width="1"/>
+            <line x1="64" y1="8" x2="102" y2="8" stroke="rgba(236,221,185,0.15)" stroke-width="0.6"/>
+            <line x1="64" y1="14" x2="96" y2="14" stroke="rgba(236,221,185,0.12)" stroke-width="0.6"/>
+            <line x1="64" y1="20" x2="90" y2="20" stroke="rgba(236,221,185,0.1)" stroke-width="0.6"/>
+            <text x="64" y="31" fill="rgba(236,221,185,0.5)" font-size="7" font-family="Space Mono" font-weight="700">PIÈCES</text>
+          </g>
+          
+          <!-- Checklist -->
+          <g transform="translate(60, 132)">
+            <rect x="0" y="0" width="14" height="14" rx="2" fill="rgba(232,66,73,0.12)" stroke="#e84249" stroke-width="1"/>
+            <path d="M3 7 L6 10 L11 4" fill="none" stroke="#e84249" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="20" y1="7" x2="55" y2="7" stroke="rgba(236,221,185,0.2)" stroke-width="0.8"/>
+            
+            <rect x="65" y="0" width="14" height="14" rx="2" fill="rgba(232,66,73,0.12)" stroke="#e84249" stroke-width="1"/>
+            <path d="M68 7 L71 10 L76 4" fill="none" stroke="#e84249" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="85" y1="7" x2="105" y2="7" stroke="rgba(236,221,185,0.2)" stroke-width="0.8"/>
+          </g>
+          
+          
+          <!-- Rules badge -->
+          <g transform="translate(45, 168)">
+            <rect x="0" y="0" width="110" height="24" rx="5" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.2)" stroke-width="1"/>
+            <text x="10" y="16" fill="rgba(236,221,185,0.5)" font-size="8" font-family="Space Mono" font-weight="700">CADRE POSÉ ✓</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">2</div>
+        <div class="scene-title">Structuration du <span class="beige">dossier</span></div>
+        <div class="scene-desc">Collecte des pièces, clarification des informations et préparation d'un cadre contractuel clair. Les règles sont posées dès le départ.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 3: Mise en relation encadrée ===== -->
+  <div class="scene" data-index="2" data-label="RELATION">
+    <div class="particle" style="top:30%;left:30%;animation-delay:0.8s;"></div>
+    <div class="particle" style="top:55%;left:68%;animation-delay:2s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="0 0 220 220">
+          <!-- Central orbital ring - GOODCAR as the gravitational center -->
+          <ellipse cx="110" cy="100" rx="85" ry="30" fill="none" stroke="rgba(236,221,185,0.08)" stroke-width="0.8" transform="rotate(-8 110 100)"/>
+          <ellipse cx="110" cy="100" rx="85" ry="30" fill="none" stroke="rgba(232,66,73,0.06)" stroke-width="0.8" transform="rotate(8 110 100)"/>
+          
+          <!-- Vendeur side - left -->
+          <g>
+            <!-- Avatar circle -->
+            <circle cx="35" cy="70" r="22" fill="rgba(236,221,185,0.04)" stroke="#ecddb9" stroke-width="1.5"/>
+            <!-- Head -->
+            <circle cx="35" cy="63" r="7" fill="none" stroke="#ecddb9" stroke-width="1.2"/>
+            <!-- Body -->
+            <path d="M25 78 Q35 85 45 78" fill="none" stroke="#ecddb9" stroke-width="1.2"/>
+            <!-- Label -->
+            <text x="10" y="110" fill="rgba(236,221,185,0.5)" font-size="10" font-family="Space Mono" font-weight="700">VENDEUR</text>
+            <!-- Animated signal going to center -->
+            <circle cx="35" cy="70" r="22" fill="none" stroke="#ecddb9" stroke-width="0.5" opacity="0">
+              <animate attributeName="r" values="22;50;80" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.4;0.1;0" dur="3s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          
+          <!-- Acheteur side - right -->
+          <g>
+            <circle cx="185" cy="70" r="22" fill="rgba(232,66,73,0.04)" stroke="#e84249" stroke-width="1.5"/>
+            <circle cx="185" cy="63" r="7" fill="none" stroke="#e84249" stroke-width="1.2"/>
+            <path d="M175 78 Q185 85 195 78" fill="none" stroke="#e84249" stroke-width="1.2"/>
+            <text x="158" y="110" fill="rgba(232,66,73,0.6)" font-size="10" font-family="Space Mono" font-weight="700">ACHETEUR</text>
+            <circle cx="185" cy="70" r="22" fill="none" stroke="#e84249" stroke-width="0.5" opacity="0">
+              <animate attributeName="r" values="22;50;80" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.3;0.08;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          
+          <!-- GOODCAR center hub -->
+          <g class="handshake-move">
+            <circle cx="110" cy="70" r="28" fill="rgba(232,66,73,0.06)" stroke="#e84249" stroke-width="1.8"/>
+            <circle cx="110" cy="70" r="18" fill="rgba(232,66,73,0.04)" stroke="rgba(232,66,73,0.3)" stroke-width="1"/>
+            <!-- GOODCAR logo -->
+            <text x="110" y="68" fill="#e84249" font-size="7" font-weight="800" font-family="Outfit" text-anchor="middle" letter-spacing="0.5">GOOD</text>
+            <text x="110" y="78" fill="#e84249" font-size="7" font-weight="800" font-family="Outfit" text-anchor="middle" letter-spacing="0.5">CAR</text>
+            <!-- Rotating outer ring -->
+            <circle cx="110" cy="70" r="35" fill="none" stroke="rgba(232,66,73,0.12)" stroke-width="0.8" stroke-dasharray="6 8">
+              <animateTransform attributeName="transform" type="rotate" values="0 110 70;360 110 70" dur="20s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          
+          <!-- Connection beams - animated data flowing -->
+          <g>
+            <!-- Left beam -->
+            <line x1="57" y1="70" x2="82" y2="70" stroke="rgba(236,221,185,0.15)" stroke-width="1.5"/>
+            <circle cx="70" cy="70" r="2" fill="#ecddb9" opacity="0.6">
+              <animate attributeName="cx" values="57;82;57" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Right beam -->
+            <line x1="138" y1="70" x2="163" y2="70" stroke="rgba(232,66,73,0.15)" stroke-width="1.5"/>
+            <circle cx="150" cy="70" r="2" fill="#e84249" opacity="0.6">
+              <animate attributeName="cx" values="163;138;163" dur="2s" begin="1s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          
+          <!-- Balance / equilibrium at bottom -->
+          <g transform="translate(110, 140)">
+            <!-- Pillar -->
+            <line x1="0" y1="0" x2="0" y2="25" stroke="rgba(236,221,185,0.2)" stroke-width="1.5"/>
+            <!-- Beam -->
+            <line x1="-40" y1="0" x2="40" y2="0" stroke="#ecddb9" stroke-width="1.5" stroke-linecap="round">
+              <animateTransform attributeName="transform" type="rotate" values="-2 0 0;2 0 0;-2 0 0" dur="4s" repeatCount="indefinite"/>
+            </line>
+            <!-- Left plate -->
+            <path d="M-45 0 Q-45 8 -35 8 L-25 8 Q-15 8 -15 0" fill="none" stroke="#ecddb9" stroke-width="1" opacity="0.5">
+              <animateTransform attributeName="transform" type="rotate" values="-2 0 0;2 0 0;-2 0 0" dur="4s" repeatCount="indefinite"/>
+            </path>
+            <!-- Right plate -->
+            <path d="M15 0 Q15 8 25 8 L35 8 Q45 8 45 0" fill="none" stroke="#e84249" stroke-width="1" opacity="0.5">
+              <animateTransform attributeName="transform" type="rotate" values="-2 0 0;2 0 0;-2 0 0" dur="4s" repeatCount="indefinite"/>
+            </path>
+            <!-- Base -->
+            <polygon points="0,25 -8,32 8,32" fill="none" stroke="rgba(236,221,185,0.2)" stroke-width="1"/>
+          </g>
+
+          <text x="110" y="195" fill="rgba(236,221,185,0.3)" font-size="8" font-family="Space Mono" letter-spacing="2" text-anchor="middle">NÉGOCIATION ÉQUILIBRÉE</text>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">3</div>
+        <div class="scene-title">Mise en relation <span class="accent">encadrée</span></div>
+        <div class="scene-desc">Organisation des échanges, accompagnement des visites et assistance à la négociation. Les discussions restent équilibrées et sécurisées.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 4: Sécurisation du paiement ===== -->
+  <div class="scene" data-index="3" data-label="PAIEMENT">
+    <div class="particle" style="top:22%;left:18%;animation-delay:0.6s;"></div>
+    <div class="particle" style="top:68%;left:78%;animation-delay:1.8s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="-10 -10 240 240" overflow="visible">
+          <!-- Vault / Safe door -->
+          <rect x="40" y="25" width="140" height="150" rx="8" fill="rgba(236,221,185,0.03)" stroke="#ecddb9" stroke-width="2"/>
+          <!-- Inner border -->
+          <rect x="50" y="35" width="120" height="130" rx="5" fill="none" stroke="rgba(236,221,185,0.1)" stroke-width="0.8"/>
+          
+          <!-- Vault dial / combination lock -->
+          <g class="lock-pulse" transform="translate(110, 90)">
+            <!-- Outer ring -->
+            <circle cx="0" cy="0" r="35" fill="none" stroke="rgba(236,221,185,0.15)" stroke-width="1"/>
+            <!-- Tick marks -->
+            <g>
+              <line x1="0" y1="-35" x2="0" y2="-30" stroke="#ecddb9" stroke-width="1.5"/>
+              <line x1="35" y1="0" x2="30" y2="0" stroke="#ecddb9" stroke-width="1.5"/>
+              <line x1="0" y1="35" x2="0" y2="30" stroke="#ecddb9" stroke-width="1.5"/>
+              <line x1="-35" y1="0" x2="-30" y2="0" stroke="#ecddb9" stroke-width="1.5"/>
+              <!-- Small ticks -->
+              <line x1="24.7" y1="-24.7" x2="21.2" y2="-21.2" stroke="rgba(236,221,185,0.3)" stroke-width="0.8"/>
+              <line x1="24.7" y1="24.7" x2="21.2" y2="21.2" stroke="rgba(236,221,185,0.3)" stroke-width="0.8"/>
+              <line x1="-24.7" y1="24.7" x2="-21.2" y2="21.2" stroke="rgba(236,221,185,0.3)" stroke-width="0.8"/>
+              <line x1="-24.7" y1="-24.7" x2="-21.2" y2="-21.2" stroke="rgba(236,221,185,0.3)" stroke-width="0.8"/>
+            </g>
+            <!-- Middle ring -->
+            <circle cx="0" cy="0" r="24" fill="rgba(232,66,73,0.04)" stroke="#e84249" stroke-width="1.5"/>
+            <!-- Inner ring -->
+            <circle cx="0" cy="0" r="14" fill="rgba(232,66,73,0.08)" stroke="#e84249" stroke-width="1"/>
+            <!-- Center -->
+            <circle cx="0" cy="0" r="5" fill="#e84249" opacity="0.8"/>
+            <g>
+              <animateTransform attributeName="transform" type="rotate" values="0 0 0;120 0 0;240 0 0;360 0 0" dur="6s" repeatCount="indefinite"/>
+              <line x1="0" y1="0" x2="0" y2="-32" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="0" cy="-32" r="3" fill="#e84249" opacity="0.6"/>
+            </g>
+          </g>
+          
+          <!-- Vault handle -->
+          <g transform="translate(165, 75)">
+            <line x1="0" y1="0" x2="0" y2="30" stroke="#ecddb9" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="0" cy="0" r="5" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="0" cy="30" r="5" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+          </g>
+          
+          <!-- Locking bolts -->
+          <g>
+            <rect x="40" y="55" width="8" height="6" rx="1" fill="rgba(236,221,185,0.15)" stroke="#ecddb9" stroke-width="0.8">
+              <animate attributeName="width" values="8;12;8" dur="3s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="40" y="90" width="8" height="6" rx="1" fill="rgba(236,221,185,0.15)" stroke="#ecddb9" stroke-width="0.8">
+              <animate attributeName="width" values="8;12;8" dur="3s" begin="0.3s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="40" y="125" width="8" height="6" rx="1" fill="rgba(236,221,185,0.15)" stroke="#ecddb9" stroke-width="0.8">
+              <animate attributeName="width" values="8;12;8" dur="3s" begin="0.6s" repeatCount="indefinite"/>
+            </rect>
+          </g>
+          
+          <!-- Transaction timeline at bottom -->
+          <g transform="translate(50, 195)">
+            <line x1="0" y1="0" x2="120" y2="0" stroke="rgba(236,221,185,0.1)" stroke-width="1"/>
+            <!-- Step dots -->
+            <circle cx="0" cy="0" r="4" fill="#e84249" opacity="0.8"/>
+            <circle cx="40" cy="0" r="4" fill="#e84249" opacity="0.8"/>
+            <circle cx="80" cy="0" r="4" fill="#e84249" opacity="0.6"/>
+            <circle cx="120" cy="0" r="3" fill="none" stroke="rgba(236,221,185,0.3)" stroke-width="1"/>
+            <!-- Progress fill -->
+            <line x1="0" y1="0" x2="80" y2="0" stroke="#e84249" stroke-width="1.5" opacity="0.4"/>
+            <!-- Moving dot -->
+            <circle cx="0" cy="0" r="2" fill="#fff" opacity="0.8">
+              <animate attributeName="cx" values="0;40;80;80" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;1;1;0" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <text x="-5" y="20" fill="rgba(236,221,185,0.4)" font-size="8" font-family="Space Mono" font-weight="700">TRACÉ</text>
+            <text x="85" y="20" fill="rgba(232,66,73,0.5)" font-size="8" font-family="Space Mono" font-weight="700">VALIDÉ</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">4</div>
+        <div class="scene-title">Sécurisation du <span class="beige">paiement</span></div>
+        <div class="scene-desc">Encadrement financier, formalisation écrite et validation des engagements des deux parties. Chaque étape est tracée.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCENE 5: Finalisation & transmission ===== -->
+  <div class="scene" data-index="4" data-label="FINALISATION">
+    <div class="particle" style="top:20%;left:15%;animation-delay:0.2s;"></div>
+    <div class="particle" style="top:50%;left:80%;animation-delay:1s;"></div>
+    <div class="particle" style="top:75%;left:35%;animation-delay:2.2s;"></div>
+    <div class="scene-inner">
+      <div class="icon-side">
+        <svg class="scene-icon" viewBox="-15 -15 250 250" overflow="visible">
+          <!-- === ZONE HAUTE : Voiture + Clés === -->
+          <!-- Car -->
+          <g transform="translate(60, 20)">
+            <rect x="10" y="28" width="70" height="22" rx="6" fill="rgba(236,221,185,0.08)" stroke="#ecddb9" stroke-width="1.8"/>
+            <path d="M20 28 L28 12 L62 12 L70 28" fill="none" stroke="#ecddb9" stroke-width="1.5"/>
+            <path d="M28 28 L33 16 L44 16 L44 28" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.5"/>
+            <path d="M47 28 L47 16 L58 16 L64 28" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.12)" stroke-width="0.5"/>
+            <circle cx="27" cy="52" r="5.5" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.5"/>
+            <circle cx="63" cy="52" r="5.5" fill="var(--blue)" stroke="#ecddb9" stroke-width="1.5"/>
+          </g>
+          
+          <!-- Key -->
+          <g class="key-handover" transform="translate(165, 30)">
+            <circle cx="0" cy="0" r="10" fill="none" stroke="#e84249" stroke-width="2"/>
+            <circle cx="0" cy="0" r="4.5" fill="none" stroke="rgba(232,66,73,0.3)" stroke-width="0.8"/>
+            <line x1="10" y1="0" x2="32" y2="0" stroke="#e84249" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="24" y1="0" x2="24" y2="7" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+            <line x1="30" y1="0" x2="30" y2="7" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          
+          <!-- Sparkles around key -->
+          <g class="sparkle">
+            <line x1="160" y1="15" x2="167" y2="8" stroke="#ecddb9" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="165" y1="35" x2="172" y2="30" stroke="#e84249" stroke-width="1.2" stroke-linecap="round"/>
+          </g>
+          <g class="sparkle" style="animation-delay:0.6s;">
+            <circle cx="170" cy="20" r="2" fill="#e84249" opacity="0.5"/>
+          </g>
+
+          <!-- === ZONE MILIEU : Dossier ouvert === -->
+          <g transform="translate(25, 80)">
+            <!-- Folder -->
+            <path d="M0 10 L0 0 L25 0 L32 8 L170 8 L170 65 L0 65 Z" fill="rgba(236,221,185,0.04)" stroke="#ecddb9" stroke-width="1.3"/>
+            <!-- Doc vendeur -->
+            <rect x="12" y="18" width="65" height="35" rx="2" fill="rgba(236,221,185,0.04)" stroke="rgba(236,221,185,0.2)" stroke-width="0.8"/>
+            <line x1="20" y1="28" x2="68" y2="28" stroke="rgba(236,221,185,0.15)" stroke-width="0.6"/>
+            <line x1="20" y1="34" x2="60" y2="34" stroke="rgba(236,221,185,0.1)" stroke-width="0.6"/>
+            <line x1="20" y1="40" x2="52" y2="40" stroke="rgba(236,221,185,0.08)" stroke-width="0.6"/>
+            <!-- Doc acheteur -->
+            <rect x="90" y="18" width="65" height="35" rx="2" fill="rgba(232,66,73,0.04)" stroke="rgba(232,66,73,0.2)" stroke-width="0.8"/>
+            <line x1="98" y1="28" x2="146" y2="28" stroke="rgba(232,66,73,0.12)" stroke-width="0.6"/>
+            <line x1="98" y1="34" x2="138" y2="34" stroke="rgba(232,66,73,0.1)" stroke-width="0.6"/>
+            <line x1="98" y1="40" x2="130" y2="40" stroke="rgba(232,66,73,0.08)" stroke-width="0.6"/>
+          </g>
+          
+          <!-- Label DOSSIER COMPLET centré -->
+          <text x="110" y="160" fill="rgba(236,221,185,0.45)" font-size="8" font-family="Space Mono" font-weight="700" text-anchor="middle">DOSSIER COMPLET</text>
+
+          <!-- === ZONE BASSE : Vendeur / Acheteur / Sécurisé === -->
+          <!-- Vendeur -->
+          <g transform="translate(15, 175)">
+            <circle cx="22" cy="10" r="10" fill="rgba(236,221,185,0.05)" stroke="#ecddb9" stroke-width="1"/>
+            <circle cx="22" cy="8" r="4" fill="none" stroke="#ecddb9" stroke-width="0.8"/>
+            <path d="M15 16 Q22 20 29 16" fill="none" stroke="#ecddb9" stroke-width="0.8"/>
+            <text x="5" y="32" fill="rgba(236,221,185,0.5)" font-size="9" font-family="Space Mono" font-weight="700">VENDEUR</text>
+          </g>
+          
+          <!-- Shield sécurisé au centre -->
+          <g class="shield-glow" transform="translate(110, 185)">
+            <path d="M0 -14 L14 -8 L14 5 Q14 14 0 20 Q-14 14 -14 5 L-14 -8 Z" fill="rgba(232,66,73,0.08)" stroke="#e84249" stroke-width="1.5"/>
+            <path d="M-5 1 L-1 5 L7 -3" fill="none" stroke="#e84249" stroke-width="2" stroke-linecap="round"/>
+            <text x="0" y="32" fill="rgba(232,66,73,0.5)" font-size="9" font-family="Space Mono" font-weight="700" text-anchor="middle">SÉCURISÉ</text>
+          </g>
+          
+          <!-- Acheteur -->
+          <g transform="translate(160, 175)">
+            <circle cx="22" cy="10" r="10" fill="rgba(232,66,73,0.05)" stroke="#e84249" stroke-width="1"/>
+            <circle cx="22" cy="8" r="4" fill="none" stroke="#e84249" stroke-width="0.8"/>
+            <path d="M15 16 Q22 20 29 16" fill="none" stroke="#e84249" stroke-width="0.8"/>
+            <text x="0" y="32" fill="rgba(232,66,73,0.6)" font-size="9" font-family="Space Mono" font-weight="700">ACHETEUR</text>
+          </g>
+        </svg>
+      </div>
+      <div class="text-side">
+        <div class="scene-number">5</div>
+        <div class="scene-title">Finalisation & <span class="accent">transmission</span></div>
+        <div class="scene-desc">Remise du véhicule et transmission d'un dossier complet à l'acheteur comme au vendeur. La transaction est claire, sécurisée et formalisée.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const scenes = document.querySelectorAll('.scene');
+const container = document.getElementById('sceneContainer');
+const indicator = document.getElementById('stepIndicator');
+const progressBar = document.getElementById('progressBar');
+const currentNum = document.getElementById('currentNum');
+let current = 0;
+let autoPlay = false;
+let autoInterval;
+const total = scenes.length;
+
+// Build vertical dots
+scenes.forEach((s, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'step-dot';
+  dot.setAttribute('data-label', s.getAttribute('data-label') || '');
+  dot.onclick = () => goTo(i);
+  indicator.appendChild(dot);
+});
+
+function goTo(index) {
+  if (index < 0 || index >= total) return;
+  current = index;
+  container.style.transform = `translateX(-${current * 100}vw)`;
+  
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+  
+  scenes.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+  });
+  
+  progressBar.style.width = `${((current + 1) / total) * 100}%`;
+  currentNum.textContent = current + 1;
+  
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === total - 1;
+}
+
+function toggleAuto() {
+  autoPlay = !autoPlay;
+  updateAutoBtn();
+  if (autoPlay) {
+    startAutoInterval();
+  } else {
+    clearInterval(autoInterval);
+  }
+}
+
+function startAutoInterval() {
+  clearInterval(autoInterval);
+  autoInterval = setInterval(() => {
+    if (current >= total - 1) current = -1;
+    goTo(current + 1);
+  }, 5000);
+}
+
+function updateAutoBtn() {
+  const btn = document.getElementById('autoToggle');
+  if (!autoPlay) {
+    btn.innerHTML = '▶ <span>AUTO</span>';
+    btn.classList.remove('playing', 'hovering');
+  } else if (hoverPaused) {
+    btn.innerHTML = '⏸ <span>EN PAUSE</span>';
+    btn.classList.remove('playing');
+    btn.classList.add('hovering');
+  } else {
+    btn.innerHTML = '⏸ <span>PAUSE</span>';
+    btn.classList.add('playing');
+    btn.classList.remove('hovering');
+  }
+}
+
+// Hover pause
+let hoverPaused = false;
+const sceneContainer = document.getElementById('sceneContainer');
+
+sceneContainer.addEventListener('mouseenter', () => {
+  if (!autoPlay) return;
+  hoverPaused = true;
+  clearInterval(autoInterval);
+  updateAutoBtn();
+});
+
+sceneContainer.addEventListener('mouseleave', () => {
+  if (!autoPlay) return;
+  hoverPaused = false;
+  startAutoInterval();
+  updateAutoBtn();
+});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+  if (e.key === 'ArrowLeft') goTo(current - 1);
+});
+
+// Touch
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+});
+
+// Init
+goTo(0);
+
+// Ne démarrer l'auto-play que quand l'animation est visible
+function startWhenVisible() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !autoPlay) {
+        toggleAuto();
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  observer.observe(document.body);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !autoPlay && current === 0) {
+    toggleAuto();
+  }
+});
+
+if (window.self !== window.top) {
+  startWhenVisible();
+} else {
+  toggleAuto();
+}
+</script>
+</body>
+</html>
